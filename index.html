@@ -3,44 +3,27 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Transcripts — Factors.ai</title>
-<meta name="description" content="Turn a YouTube video into a speaker-named transcript in a Google Doc."/>
+<title>Transcripts</title>
+<meta name="description" content="Turn a YouTube video into a speaker-named transcript."/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ============================================================
-   Palette + type — Vercel-flavoured: pure black, thin borders,
-   near-white text, one white primary action.
-   ============================================================ */
 :root{
-  --bg:#000;
-  --surface:#0a0a0a;
-  --surface-2:#111;
-  --border:#1f1f1f;
-  --border-hi:#2e2e2e;
-  --border-focus:#454545;
-  --fg:#ededed;
-  --fg-2:#a1a1a1;
-  --fg-3:#7d7d7d;
-  --fg-4:#525252;
-  --blue:#3291ff;
-  --green:#50e3c2;
-  --amber:#f5a623;
-  --red:#ff5c5c;
-  --radius:8px;
-  --radius-lg:12px;
+  --bg:#000; --surface:#0a0a0a; --surface-2:#111;
+  --border:#1f1f1f; --border-hi:#2e2e2e; --border-focus:#454545;
+  --fg:#ededed; --fg-2:#a1a1a1; --fg-3:#7d7d7d; --fg-4:#525252;
+  --green:#50e3c2; --amber:#f5a623; --red:#ff5c5c;
+  --radius:8px; --radius-lg:12px;
   --sans:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{
-  font-family:var(--sans);background:var(--bg);color:var(--fg);
-  line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
-  min-height:100vh;display:flex;flex-direction:column;
+  font-family:var(--sans);background:var(--bg);color:var(--fg);line-height:1.55;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;min-height:100vh;
 }
-/* faint glow behind the hero, the way Vercel lifts a black page */
 body::before{
   content:"";position:fixed;top:-320px;left:50%;transform:translateX(-50%);
   width:1100px;height:640px;pointer-events:none;z-index:0;
@@ -51,155 +34,85 @@ button,input,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
 ::selection{background:rgba(255,255,255,.16)}
 
-/* ---------- nav ---------- */
-.nav{
-  position:sticky;top:0;z-index:40;border-bottom:1px solid var(--border);
-  background:rgba(0,0,0,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-}
-.nav-in{max-width:1080px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{display:flex;align-items:center;gap:10px;min-width:0}
-.brand svg{width:17px;height:21px;flex:0 0 auto}
-.brand .divider{width:1px;height:22px;background:var(--border-hi);transform:rotate(18deg);margin:0 3px}
-.brand .label{font-size:14px;font-weight:500;letter-spacing:-.01em;white-space:nowrap}
-.brand .label span{color:var(--fg-3)}
-.nav-status{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--fg-3)}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--fg-4)}
-.dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(80,227,194,.13)}
-.dot.busy{background:var(--amber);animation:pulse 1.3s ease-in-out infinite}
-.dot.err{background:var(--red)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-@media(max-width:600px){.nav-status{display:none}}
+.nav{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--border);background:rgba(0,0,0,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.nav-in{max-width:860px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center}
+.nav-in svg{width:18px;height:22px;display:block}
 
-/* ---------- layout ---------- */
-.main{flex:1;position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:64px 24px 96px;width:100%}
-@media(max-width:640px){.main{padding:44px 20px 72px}}
+.main{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:72px 24px 120px}
+@media(max-width:640px){.main{padding:48px 20px 80px}}
 
-.hero{margin-bottom:44px}
-.pill{
-  display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border-hi);
-  border-radius:999px;padding:5px 13px 5px 9px;font-size:12px;color:var(--fg-2);margin-bottom:22px;
-  background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);
-}
-.pill b{font-weight:500;color:var(--fg)}
+.hero{margin-bottom:40px}
 h1{
   font-size:clamp(34px,5.4vw,52px);font-weight:600;letter-spacing:-.035em;line-height:1.06;
   background:linear-gradient(180deg,#fff 30%,#999);-webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent;
 }
-.sub{margin-top:16px;font-size:16px;color:var(--fg-2);max-width:600px;letter-spacing:-.01em}
+.sub{margin-top:16px;font-size:16px;color:var(--fg-2);max-width:580px;letter-spacing:-.01em}
 
-/* ---------- cards ---------- */
-.card{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
-  overflow:hidden;
-}
-.card + .card{margin-top:20px}
-.card-h{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:14px}
-.card-h h2{font-size:15px;font-weight:550;letter-spacing:-.012em}
-.card-h .meta{font-family:var(--mono);font-size:11px;color:var(--fg-3)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
 .card-b{padding:24px}
-.card-f{padding:16px 24px;border-top:1px solid var(--border);background:rgba(255,255,255,.015);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.card-f .note{font-size:12.5px;color:var(--fg-3)}
+.card-f{padding:16px 24px;border-top:1px solid var(--border);background:rgba(255,255,255,.015);display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
 
-/* ---------- form ---------- */
 .field{margin-bottom:20px}
 .field:last-child{margin-bottom:0}
 label{display:block;font-size:13px;font-weight:500;margin-bottom:8px;letter-spacing:-.008em}
 label .opt{color:var(--fg-4);font-weight:400;margin-left:6px}
-input[type=text],input[type=url]{
-  width:100%;height:42px;padding:0 13px;background:#000;
-  border:1px solid var(--border-hi);border-radius:var(--radius);
-  outline:none;transition:border-color .15s,box-shadow .15s;font-size:14px;
+input[type=url],input[type=text]{
+  width:100%;height:42px;padding:0 13px;background:#000;border:1px solid var(--border-hi);
+  border-radius:var(--radius);outline:none;font-size:14px;transition:border-color .15s,box-shadow .15s;
 }
 input::placeholder{color:var(--fg-4)}
 input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(255,255,255,.05)}
 input.bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(255,92,92,.1)!important}
-input:disabled{opacity:.45;cursor:not-allowed}
 .help{margin-top:7px;font-size:12px;color:var(--fg-3);line-height:1.5}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:640px){.row{grid-template-columns:1fr}}
 
-.btn{
-  height:40px;padding:0 17px;border-radius:var(--radius);font-size:14px;font-weight:500;
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  transition:background .14s,border-color .14s,opacity .14s,transform .05s;white-space:nowrap;
-}
+.btn{height:40px;padding:0 17px;border-radius:var(--radius);font-size:14px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .14s,border-color .14s,opacity .14s,transform .05s;white-space:nowrap}
 .btn:active{transform:translateY(.5px)}
 .btn-primary{background:#fff;color:#000;border:1px solid #fff}
-.btn-primary:hover:not(:disabled){background:#d4d4d4;border-color:#d4d4d4}
-.btn-primary:disabled{background:#2b2b2b;border-color:#2b2b2b;color:var(--fg-4);cursor:not-allowed}
+.btn-primary:hover{background:#d4d4d4;border-color:#d4d4d4}
 .btn-ghost{border:1px solid var(--border-hi);color:var(--fg)}
 .btn-ghost:hover{border-color:var(--border-focus);background:rgba(255,255,255,.035)}
-.spinner{width:14px;height:14px;border:1.6px solid rgba(0,0,0,.25);border-top-color:#000;border-radius:50%;animation:spin .65s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+.btn-full{width:100%}
 
-/* ---------- progress ---------- */
 .hidden{display:none!important}
-.steps{display:flex;flex-direction:column;gap:2px}
-.step{display:flex;align-items:center;gap:13px;padding:11px 0;font-size:13.5px;color:var(--fg-4);transition:color .25s}
-.step .ic{
-  width:19px;height:19px;border-radius:50%;border:1.5px solid var(--border-focus);
-  display:flex;align-items:center;justify-content:center;flex:0 0 auto;transition:.25s;
+
+/* loading */
+.loading{display:flex;flex-direction:column;align-items:center;text-align:center;padding:56px 24px}
+.orbit{width:34px;height:34px;border:2px solid var(--border-hi);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading .lt{font-size:14.5px;font-weight:500;letter-spacing:-.01em}
+.loading .ls{font-size:13px;color:var(--fg-3);margin-top:6px}
+.loading .le{font-family:var(--mono);font-size:12px;color:var(--fg-4);margin-top:18px}
+
+/* result */
+.rhead{display:flex;align-items:flex-start;gap:14px;margin-bottom:24px}
+.check{width:32px;height:32px;border-radius:50%;background:rgba(80,227,194,.11);border:1px solid rgba(80,227,194,.3);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.check svg{width:15px;height:15px;stroke:var(--green);stroke-width:2.5;fill:none}
+.rhead h2{font-size:17px;font-weight:550;letter-spacing:-.018em;line-height:1.35}
+.rhead p{font-size:13px;color:var(--fg-3);margin-top:4px;font-family:var(--mono)}
+
+.panel{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface)}
+.panel + .panel{margin-top:16px}
+.panel-h{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:14px}
+.panel-h .pt{font-size:14px;font-weight:550;letter-spacing:-.012em}
+.panel-h .ps{font-size:12.5px;color:var(--fg-3);margin-top:2px}
+.panel-b{padding:20px}
+
+.preview{
+  width:100%;height:280px;background:#000;border:1px solid var(--border-hi);border-radius:var(--radius);
+  padding:14px 16px;font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--fg-2);
+  resize:vertical;outline:none;white-space:pre-wrap;
 }
-.step.active{color:var(--fg)}
-.step.active .ic{border-color:var(--fg);animation:ring 1.4s ease-in-out infinite}
-@keyframes ring{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.16)}50%{box-shadow:0 0 0 5px rgba(255,255,255,0)}}
-.step.done{color:var(--fg-2)}
-.step.done .ic{border-color:var(--green);background:var(--green)}
-.step.done .ic svg{display:block}
-.step .ic svg{display:none;width:11px;height:11px;stroke:#000;stroke-width:3}
-.step .t{flex:1}
-.step .ms{font-family:var(--mono);font-size:11px;color:var(--fg-4)}
-.elapsed{font-family:var(--mono);font-size:12px;color:var(--fg-3)}
+.preview:focus{border-color:var(--border-focus)}
+.dl-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.dl-row{grid-template-columns:1fr}}
 
-/* ---------- result ---------- */
-.result-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:22px}
-.check{width:34px;height:34px;border-radius:50%;background:rgba(80,227,194,.11);border:1px solid rgba(80,227,194,.3);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-.check svg{width:16px;height:16px;stroke:var(--green);stroke-width:2.4}
-.result-top h3{font-size:16px;font-weight:550;letter-spacing:-.015em;line-height:1.35}
-.result-top p{font-size:13px;color:var(--fg-3);margin-top:3px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:22px}
-@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat{background:var(--surface-2);padding:14px 16px}
-.stat .k{font-size:11px;color:var(--fg-3);letter-spacing:.02em;margin-bottom:5px}
-.stat .v{font-family:var(--mono);font-size:15px;font-weight:500}
-.roster{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px}
-.roster-h{padding:10px 15px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12px;color:var(--fg-2);font-weight:500}
-.rrow{padding:12px 15px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;font-size:13px}
-.rrow:last-child{border-bottom:0}
-.rname{font-weight:500;min-width:130px;flex:0 0 auto}
-.rev{color:var(--fg-3);font-size:12.5px;flex:1}
-.conf{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;flex:0 0 auto;text-transform:uppercase;letter-spacing:.04em}
-.conf.high{color:var(--green);border-color:rgba(80,227,194,.35);background:rgba(80,227,194,.07)}
-.conf.medium{color:var(--amber);border-color:rgba(245,166,35,.35);background:rgba(245,166,35,.07)}
-.conf.low{color:var(--red);border-color:rgba(255,92,92,.35);background:rgba(255,92,92,.07)}
-.callout{border:1px solid var(--border-hi);border-left:2px solid var(--amber);border-radius:var(--radius);padding:14px 16px;font-size:12.5px;color:var(--fg-2);line-height:1.6;background:rgba(245,166,35,.035)}
-.callout b{color:var(--fg);font-weight:550}
-.callout.err{border-left-color:var(--red);background:rgba(255,92,92,.04)}
-.callout code{font-family:var(--mono);font-size:11.5px;color:var(--fg);background:rgba(255,255,255,.06);padding:1.5px 5px;border-radius:4px}
+.note{margin-top:22px;border:1px solid var(--border-hi);border-left:2px solid var(--amber);border-radius:var(--radius);padding:13px 16px;font-size:12.5px;color:var(--fg-2);line-height:1.6;background:rgba(245,166,35,.035)}
+.note b{color:var(--fg);font-weight:550}
 
-/* ---------- history ---------- */
-.hist{margin-top:52px}
-.hist-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.hist-h h2{font-size:14px;font-weight:550;letter-spacing:-.012em}
-.hist-h button{font-size:12.5px;color:var(--fg-3)}
-.hist-h button:hover{color:var(--fg)}
-.hlist{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
-.hitem{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface);transition:background .13s}
-.hitem:last-child{border-bottom:0}
-.hitem:hover{background:var(--surface-2)}
-.hitem .ht{flex:1;min-width:0}
-.hitem .ht b{display:block;font-size:13.5px;font-weight:450;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.008em}
-.hitem .ht small{display:block;font-family:var(--mono);font-size:11px;color:var(--fg-4);margin-top:3px}
-.hitem .open{font-size:12.5px;color:var(--fg-2);border:1px solid var(--border-hi);border-radius:6px;padding:5px 11px;flex:0 0 auto;transition:.13s}
-.hitem .open:hover{color:#fff;border-color:var(--border-focus)}
-.empty{border:1px dashed var(--border-hi);border-radius:var(--radius-lg);padding:40px 20px;text-align:center;color:var(--fg-4);font-size:13.5px}
+.err{border:1px solid var(--border-hi);border-left:2px solid var(--red);border-radius:var(--radius);padding:14px 16px;font-size:13px;color:var(--fg-2);line-height:1.6;background:rgba(255,92,92,.04)}
+.err b{color:var(--fg);font-weight:550}
 
-/* ---------- footer ---------- */
-.foot{border-top:1px solid var(--border);position:relative;z-index:1}
-.foot-in{max-width:1080px;margin:0 auto;padding:22px 24px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--fg-4)}
-
-/* ---------- loader ---------- */
 #logo-loader{position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden;will-change:transform,opacity}
 #logo-loader canvas{display:block}
 </style>
@@ -210,109 +123,86 @@ input:disabled{opacity:.45;cursor:not-allowed}
 
 <nav class="nav">
   <div class="nav-in">
-    <div class="brand">
-      <svg viewBox="0 0 370 448" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M72.15 302.84H184.96C184.96 365.15 134.45 415.69 72.15 415.69V302.84Z" fill="#fff"/>
-        <path d="M72.15 167.58H297.83C297.83 229.9 247.31 280.42 184.99 280.42H72.15V167.58Z" fill="#fff"/>
-        <path d="M72.15 145.13C72.15 82.81 122.67 32.29 184.99 32.29H297.83C297.83 94.61 247.31 145.13 184.99 145.13H72.15Z" fill="#fff"/>
-      </svg>
-      <span class="divider"></span>
-      <span class="label">Transcripts <span>/ marketing</span></span>
-    </div>
-    <div class="nav-status"><span class="dot" id="statusDot"></span><span id="statusText">ready</span></div>
+    <svg viewBox="0 0 370 448" xmlns="http://www.w3.org/2000/svg" aria-label="Factors">
+      <path d="M72.15 302.84H184.96C184.96 365.15 134.45 415.69 72.15 415.69V302.84Z" fill="#fff"/>
+      <path d="M72.15 167.58H297.83C297.83 229.9 247.31 280.42 184.99 280.42H72.15V167.58Z" fill="#fff"/>
+      <path d="M72.15 145.13C72.15 82.81 122.67 32.29 184.99 32.29H297.83C297.83 94.61 247.31 145.13 184.99 145.13H72.15Z" fill="#fff"/>
+    </svg>
   </div>
 </nav>
 
 <main class="main">
-  <section class="hero">
-    <div class="pill"><b>Supadata</b> captions &nbsp;→&nbsp; <b>Claude</b> speaker naming &nbsp;→&nbsp; <b>Google&nbsp;Docs</b></div>
+  <div class="hero">
     <h1>YouTube to a named<br/>transcript.</h1>
     <p class="sub">Paste a link. Get a Google Doc where every line is attributed to the person who said it, with timestamps.</p>
-  </section>
+  </div>
 
-  <!-- form -->
   <div class="card" id="formCard">
-    <div class="card-h"><h2>New transcript</h2><span class="meta" id="formMeta">~60s</span></div>
     <div class="card-b">
       <div class="field">
         <label for="url">YouTube URL</label>
         <input type="url" id="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" spellcheck="false"/>
-        <div class="help">The video must be public and have captions available.</div>
       </div>
-      <div class="row">
-        <div class="field">
-          <label for="speakers">Speaker names <span class="opt">optional</span></label>
-          <input type="text" id="speakers" placeholder="Praveen Das, Jessica Reid" autocomplete="off"/>
-          <div class="help">Comma separated. Supplying them is <b>much</b> more reliable than letting the names be inferred.</div>
-        </div>
-        <div class="field">
-          <label for="by">Your name <span class="opt">optional</span></label>
-          <input type="text" id="by" placeholder="mansi" autocomplete="off"/>
-          <div class="help">Recorded with the request so the team knows who ran it.</div>
-        </div>
+      <div class="field">
+        <label for="speakers">Speaker names <span class="opt">optional</span></label>
+        <input type="text" id="speakers" placeholder="Praveen Das, Jessica Reid" autocomplete="off"/>
+        <div class="help">Comma separated. Adding them makes the naming far more accurate.</div>
       </div>
     </div>
     <div class="card-f">
-      <span class="note" id="footNote">Runs on the marketing n8n instance.</span>
       <button class="btn btn-primary" id="goBtn">Generate transcript</button>
     </div>
   </div>
 
-  <!-- progress -->
-  <div class="card hidden" id="progressCard">
-    <div class="card-h"><h2>Working</h2><span class="elapsed" id="elapsed">0:00</span></div>
-    <div class="card-b">
-      <div class="steps" id="steps"></div>
+  <div class="card hidden" id="loadCard">
+    <div class="loading">
+      <div class="orbit"></div>
+      <div class="lt" id="loadTitle">Generating transcript</div>
+      <div class="ls">This usually takes about a minute. Keep the tab open.</div>
+      <div class="le" id="elapsed">0:00</div>
     </div>
-    <div class="card-f">
-      <span class="note">Keep this tab open. The doc link appears here when it's done.</span>
-      <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
-    </div>
+    <div class="card-f"><button class="btn btn-ghost" id="cancelBtn">Cancel</button></div>
   </div>
 
-  <!-- result -->
-  <div class="card hidden" id="resultCard">
-    <div class="card-b">
-      <div class="result-top">
-        <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-        <div>
-          <h3 id="rTitle">Transcript ready</h3>
-          <p id="rSub"></p>
+  <div class="hidden" id="resultWrap">
+    <div class="rhead">
+      <div class="check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <div>
+        <h2 id="rTitle">Transcript ready</h2>
+        <p id="rSub"></p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h">
+        <div><div class="pt">Copy the transcript</div><div class="ps">Full text, ready to paste anywhere.</div></div>
+        <button class="btn btn-ghost" id="copyBtn">Copy</button>
+      </div>
+      <div class="panel-b"><textarea class="preview" id="preview" readonly spellcheck="false"></textarea></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h">
+        <div><div class="pt">Download</div><div class="ps">Save a file, or open it in Google Docs.</div></div>
+      </div>
+      <div class="panel-b">
+        <div class="dl-row">
+          <button class="btn btn-ghost btn-full" id="dlTxt">Download .txt</button>
+          <a class="btn btn-primary btn-full" id="openBtn" target="_blank" rel="noopener">Open Google Doc</a>
         </div>
       </div>
-      <div class="stats" id="rStats"></div>
-      <div id="rRoster"></div>
-      <div id="rWarn"></div>
     </div>
-    <div class="card-f">
-      <button class="btn btn-ghost" id="againBtn">New transcript</button>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost" id="copyBtn">Copy link</button>
-        <a class="btn btn-primary" id="openBtn" target="_blank" rel="noopener">Open Google Doc →</a>
-      </div>
-    </div>
+
+    <div class="note" id="rNote"></div>
+
+    <div style="margin-top:24px"><button class="btn btn-ghost" id="againBtn">Generate another</button></div>
   </div>
 
-  <!-- error -->
-  <div class="card hidden" id="errorCard">
-    <div class="card-h"><h2 style="color:var(--red)">Didn't finish</h2></div>
-    <div class="card-b"><div class="callout err" id="errBody"></div></div>
-    <div class="card-f"><span class="note">Nothing was written to Google Docs.</span><button class="btn btn-ghost" id="retryBtn">Try again</button></div>
+  <div class="card hidden" id="errCard">
+    <div class="card-b"><div class="err" id="errBody"></div></div>
+    <div class="card-f"><button class="btn btn-ghost" id="retryBtn">Try again</button></div>
   </div>
-
-  <!-- history -->
-  <section class="hist">
-    <div class="hist-h"><h2>Recent</h2><button id="clearHist">Clear</button></div>
-    <div id="histBody"></div>
-  </section>
 </main>
-
-<footer class="foot">
-  <div class="foot-in">
-    <span>Factors.ai · marketing</span>
-    <span id="footRight">names are inferred — spot-check before publishing</span>
-  </div>
-</footer>
 
 <script type="importmap">
 {
@@ -326,9 +216,9 @@ input:disabled{opacity:.45;cursor:not-allowed}
 import * as THREE from "three";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 
-/* Logo loader — same assemble-and-reveal as the ticket log, recoloured for a
-   black page. The backdrop and the reveal plane are both black, so the logo is
-   simply covered rather than flashing white against a dark app. */
+/* Logo loader — assemble, zoom, reveal. Recoloured for a black page: the
+   backdrop and the reveal plane are both black so it dissolves into the app
+   instead of flashing white. */
 (function runLogoLoader(){
   const el = document.getElementById("logo-loader");
   if(!el) return;
@@ -353,7 +243,6 @@ import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 
   const mats = [new THREE.MeshBasicMaterial({color:0xffffff}), new THREE.MeshBasicMaterial({color:0xbdbdbd})];
   const group = new THREE.Group(), pieces = [];
-
   new SVGLoader().parse(svg).paths.forEach((path)=>{
     SVGLoader.createShapes(path).forEach((shape)=>{
       const geo = new THREE.ExtrudeGeometry(shape,{depth:60,bevelEnabled:true,bevelThickness:4,bevelSize:3,bevelSegments:3});
@@ -368,11 +257,9 @@ import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
   scene.add(group);
   const baseScaleY = group.scale.y;
 
-  /* backdrop: black instead of the red used on the ticket log */
   const bg = new THREE.Mesh(new THREE.PlaneGeometry(6000,6000), new THREE.MeshBasicMaterial({color:0x000000}));
   bg.position.z = -300; scene.add(bg);
 
-  /* reveal plane: also black, so it dissolves into the app rather than flashing */
   const revealMat = new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0});
   const reveal = new THREE.Mesh(new THREE.PlaneGeometry(1,1), revealMat);
   reveal.position.z = 40; scene.add(reveal);
@@ -438,92 +325,40 @@ addEventListener("error",(e)=>{
 </script>
 
 <script>
-/* ============================================================
-   CONFIG — point this at the n8n webhook.
-   The workflow must be ACTIVE for this production URL to answer.
-   While testing, swap in the test URL from the Webhook node and
-   press "Listen for test event" first.
-   ============================================================ */
+/* Point this at the n8n webhook. The workflow must be ACTIVE for the
+   production URL to answer. For testing, paste the Webhook node's test URL
+   here and press "Listen for test event" first. */
 const WEBHOOK_URL = "https://n8n-api.factors.app/webhook/youtube-transcript";
 const TIMEOUT_MS  = 5 * 60 * 1000;
-const HIST_KEY    = "factors_transcripts_v1";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-/* the request is one long call, so the step list is an honest estimate of
-   where it has probably got to — not a real progress feed from n8n */
-const STEPS = [
-  { t:"Fetching captions from Supadata", at:0     },
-  { t:"Splitting into speaker blocks",   at:6000  },
-  { t:"Claude working out who is who",   at:11000 },
-  { t:"Writing the Google Doc",          at:48000 },
-];
-
-let controller=null, timer=null, stepTimers=[], startedAt=0;
-
-/* ---------- status ---------- */
-function setStatus(mode, text){
-  $("statusDot").className = "dot" + (mode ? " "+mode : "");
-  $("statusText").textContent = text;
-}
-
-/* ---------- validation ---------- */
 const YT = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/;
-function readUrl(){
-  const el=$("url"), v=(el.value||"").trim();
-  if(!v || !YT.test(v)){ el.classList.add("bad"); el.focus(); return null; }
-  el.classList.remove("bad");
-  return v;
-}
-$("url").addEventListener("input", ()=>$("url").classList.remove("bad"));
-$("url").addEventListener("keydown", e=>{ if(e.key==="Enter") run(); });
-$("speakers").addEventListener("keydown", e=>{ if(e.key==="Enter") run(); });
 
-/* ---------- panels ---------- */
-function show(...ids){
-  ["formCard","progressCard","resultCard","errorCard"].forEach(i=>$(i).classList.add("hidden"));
-  ids.forEach(i=>$(i).classList.remove("hidden"));
+let controller=null, timer=null, startedAt=0, current=null;
+
+function show(id){
+  ["formCard","loadCard","resultWrap","errCard"].forEach(i=>$(i).classList.add("hidden"));
+  $(id).classList.remove("hidden");
 }
 
-/* ---------- progress ---------- */
-function renderSteps(activeIdx){
-  $("steps").innerHTML = STEPS.map((s,i)=>{
-    const cls = i<activeIdx ? "done" : i===activeIdx ? "active" : "";
-    return `<div class="step ${cls}">
-      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
-      <span class="t">${esc(s.t)}</span>
-      <span class="ms">${i<activeIdx?"done":i===activeIdx?"running":""}</span>
-    </div>`;
-  }).join("");
-}
-function startProgress(){
+function startTimer(){
   startedAt = Date.now();
-  renderSteps(0);
+  $("elapsed").textContent = "0:00";
   timer = setInterval(()=>{
     const s = Math.floor((Date.now()-startedAt)/1000);
     $("elapsed").textContent = Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
   }, 1000);
-  stepTimers = STEPS.map((s,i)=> i===0 ? null : setTimeout(()=>renderSteps(i), s.at)).filter(Boolean);
 }
-function stopProgress(){
-  clearInterval(timer); timer=null;
-  stepTimers.forEach(clearTimeout); stepTimers=[];
-}
+function stopTimer(){ clearInterval(timer); timer=null; }
 
-/* ---------- run ---------- */
 async function run(){
-  const url = readUrl(); if(!url) return;
+  const el = $("url"), url = (el.value||"").trim();
+  if(!url || !YT.test(url)){ el.classList.add("bad"); el.focus(); return; }
+  el.classList.remove("bad");
 
-  const payload = {
-    youtubeUrl: url,
-    knownSpeakers: ($("speakers").value||"").trim(),
-    requestedBy: ($("by").value||"").trim(),
-  };
-
-  show("progressCard");
-  startProgress();
-  setStatus("busy","working");
+  show("loadCard");
+  startTimer();
 
   controller = new AbortController();
   const killer = setTimeout(()=>controller.abort(), TIMEOUT_MS);
@@ -532,138 +367,80 @@ async function run(){
     const r = await fetch(WEBHOOK_URL,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ youtubeUrl:url, knownSpeakers:($("speakers").value||"").trim() }),
       signal: controller.signal,
     });
-
     const raw = await r.text();
     let data=null; try{ data = JSON.parse(raw); }catch(e){}
 
-    if(!r.ok){
-      throw new Error((data && (data.message||data.error)) || `The automation responded ${r.status}. ${raw.slice(0,180)}`);
-    }
-    if(!data || !data.documentUrl){
-      throw new Error("The workflow finished but sent back no document link. Check the n8n execution log.");
-    }
+    if(!r.ok) throw new Error((data && (data.message||data.error)) || `Server responded ${r.status}.`);
+    if(!data || !data.transcriptText) throw new Error("Finished, but no transcript came back.");
 
-    renderSteps(STEPS.length);
-    stopProgress();
-    setStatus("on","done");
+    stopTimer();
     renderResult(data);
-    saveHistory(data);
-
   }catch(err){
-    stopProgress();
-    setStatus("err","failed");
+    stopTimer();
     const aborted = err && err.name === "AbortError";
     showError(aborted
-      ? "Timed out after 5 minutes. Long videos can exceed that — check the n8n execution log; the doc may still have been created."
-      : (err && err.message) || "Network error. Is the workflow active?");
+      ? "Timed out after 5 minutes. Long videos can take longer than that."
+      : (err && err.message) || "Couldn't reach the server.");
   }finally{
     clearTimeout(killer);
-    controller=null;
+    controller = null;
   }
 }
 
-/* ---------- result ---------- */
 function renderResult(d){
-  show("resultCard");
+  current = d;
+  show("resultWrap");
   $("rTitle").textContent = d.title || "Transcript ready";
-  $("rSub").textContent = d.requestedBy ? `Requested by ${d.requestedBy}` : "Saved to Google Docs";
 
-  const mins = d.durationMs ? Math.round(d.durationMs/60000)+"m" : "—";
-  const stats = [
-    ["Speakers", (d.speakers||[]).length || "—"],
-    ["Segments", d.segmentCount ?? "—"],
-    ["Length",   mins],
-    ["Characters", d.characters ? (d.characters/1000).toFixed(1)+"k" : "—"],
-  ];
-  $("rStats").innerHTML = stats.map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join("");
+  const bits = [];
+  if((d.speakers||[]).length) bits.push(d.speakers.join(" · "));
+  if(d.durationMs) bits.push(Math.round(d.durationMs/60000)+" min");
+  if(d.segmentCount) bits.push(d.segmentCount+" segments");
+  $("rSub").textContent = bits.join("  —  ");
 
-  const roster = d.speakerRoster||[];
-  $("rRoster").innerHTML = roster.length ? `<div class="roster">
-      <div class="roster-h">How each name was worked out</div>
-      ${roster.map(s=>{
-        const c=String(s.confidence||"").toLowerCase();
-        return `<div class="rrow">
-          <span class="rname">${esc(s.name||"Unknown")}</span>
-          <span class="rev">${esc(s.evidence||"no evidence recorded")}</span>
-          ${c?`<span class="conf ${esc(c)}">${esc(c)}</span>`:""}
-        </div>`;
-      }).join("")}
-    </div>` : "";
+  $("preview").value = d.transcriptText;
+  $("openBtn").href = d.documentUrl || "#";
 
-  const low = d.lowConfidence||[];
-  $("rWarn").innerHTML = `<div class="callout">
-    <b>Names are inferred, not measured.</b> This reads the words, not the voices,
-    so attribution can be confidently wrong. Spot-check the opening exchange and one
-    handover in the middle before sharing.
-    ${low.length?`<br/><br/><b>Low confidence:</b> ${esc(low.join(", "))} — verify these especially.`:""}
-  </div>`;
-
-  $("openBtn").href = d.documentUrl;
-  $("copyBtn").onclick = ()=>{
-    navigator.clipboard.writeText(d.documentUrl).then(()=>{
-      $("copyBtn").textContent = "Copied";
-      setTimeout(()=>$("copyBtn").textContent="Copy link", 1600);
-    });
-  };
+  const low = d.lowConfidence || [];
+  $("rNote").innerHTML = `<b>Speaker names are worked out from the words, not the voices.</b>
+    They're usually right, but check the first exchange and one handover before you publish.
+    ${low.length ? `<br/><br/>Least certain: ${esc(low.join(", "))}.` : ""}`;
 }
 
 function showError(msg){
-  show("errorCard");
-  $("errBody").innerHTML = esc(msg)
-    + `<br/><br/>Common causes: the workflow isn't <b>active</b>, the video is private or has no captions, or the Anthropic / Supadata credential has expired.`;
+  show("errCard");
+  $("errBody").innerHTML = `<b>${esc(msg)}</b><br/><br/>
+    The video may be private or have no captions. Nothing was saved.`;
 }
 
-/* ---------- history ---------- */
-function loadHistory(){ try{ return JSON.parse(localStorage.getItem(HIST_KEY)||"[]"); }catch(e){ return []; } }
-function saveHistory(d){
-  const list = loadHistory();
-  list.unshift({ title:d.title||"Untitled", url:d.documentUrl, source:d.sourceUrl, speakers:d.speakers||[], at:Date.now() });
-  try{ localStorage.setItem(HIST_KEY, JSON.stringify(list.slice(0,20))); }catch(e){}
-  renderHistory();
+function download(){
+  if(!current) return;
+  const name = String(current.title || "transcript").replace(/[^\w\d\-. ]+/g,"").trim().slice(0,80) || "transcript";
+  const blob = new Blob([current.transcriptText], {type:"text/plain;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name + ".txt";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
-function renderHistory(){
-  const list = loadHistory();
-  if(!list.length){ $("histBody").innerHTML = `<div class="empty">Transcripts you generate will be listed here.</div>`; return; }
-  const when = ts => {
-    const m = Math.floor((Date.now()-ts)/60000);
-    if(m<1) return "just now";
-    if(m<60) return m+"m ago";
-    const h=Math.floor(m/60); if(h<24) return h+"h ago";
-    return new Date(ts).toLocaleDateString("en-GB",{day:"numeric",month:"short"});
-  };
-  $("histBody").innerHTML = `<div class="hlist">` + list.map(h=>`
-    <div class="hitem">
-      <div class="ht">
-        <b>${esc(h.title)}</b>
-        <small>${esc((h.speakers||[]).join(" · ") || "no speakers recorded")} — ${when(h.at)}</small>
-      </div>
-      <a class="open" href="${esc(h.url)}" target="_blank" rel="noopener">Open</a>
-    </div>`).join("") + `</div>`;
-}
-$("clearHist").onclick = ()=>{
-  if(!loadHistory().length) return;
-  if(confirm("Clear the list on this device? The Google Docs are not touched.")){
-    localStorage.removeItem(HIST_KEY); renderHistory();
-  }
-};
 
-/* ---------- wiring ---------- */
 $("goBtn").onclick = run;
-$("retryBtn").onclick = ()=>{ show("formCard"); setStatus("","ready"); };
-$("againBtn").onclick = ()=>{
-  $("url").value=""; $("speakers").value="";
-  show("formCard"); setStatus("","ready"); $("url").focus();
+$("url").addEventListener("input", ()=>$("url").classList.remove("bad"));
+["url","speakers"].forEach(id=>$(id).addEventListener("keydown", e=>{ if(e.key==="Enter") run(); }));
+$("cancelBtn").onclick = ()=>{ if(controller) controller.abort(); stopTimer(); show("formCard"); };
+$("retryBtn").onclick = ()=> show("formCard");
+$("againBtn").onclick = ()=>{ $("url").value=""; $("speakers").value=""; show("formCard"); $("url").focus(); };
+$("dlTxt").onclick = download;
+$("copyBtn").onclick = ()=>{
+  if(!current) return;
+  navigator.clipboard.writeText(current.transcriptText).then(()=>{
+    $("copyBtn").textContent = "Copied";
+    setTimeout(()=>$("copyBtn").textContent = "Copy", 1600);
+  });
 };
-$("cancelBtn").onclick = ()=>{
-  if(controller) controller.abort();
-  stopProgress(); show("formCard"); setStatus("","ready");
-};
-
-setStatus("","ready");
-renderHistory();
 </script>
 </body>
 </html>
