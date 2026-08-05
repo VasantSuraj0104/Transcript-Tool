@@ -241,7 +241,18 @@ import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
     el.appendChild(renderer.domElement);
   }catch(e){ bail(); return; }
 
-  const mats = [new THREE.MeshBasicMaterial({color:0xffffff}), new THREE.MeshBasicMaterial({color:0xbdbdbd})];
+  /* Lit materials rather than flat ones — without lights the bevels have no
+     shading and the extrusion reads as a sticker. DoubleSide because the group
+     is mirrored on Y, which flips the winding order. */
+  const mats = [
+    new THREE.MeshStandardMaterial({color:0xffffff, metalness:0.28, roughness:0.32, side:THREE.DoubleSide}),
+    new THREE.MeshStandardMaterial({color:0xd0d0d0, metalness:0.45, roughness:0.5,  side:THREE.DoubleSide}),
+  ];
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  const key = new THREE.DirectionalLight(0xffffff, 2.1); key.position.set(-1.2, 1.4, 2.2); scene.add(key);
+  const rim = new THREE.DirectionalLight(0x9fb4ff, 1.1); rim.position.set(2.4, -1.1, 0.8); scene.add(rim);
+  const fill = new THREE.PointLight(0xffffff, 120, 900); fill.position.set(0, 0, 260); scene.add(fill);
+
   const group = new THREE.Group(), pieces = [];
   new SVGLoader().parse(svg).paths.forEach((path)=>{
     SVGLoader.createShapes(path).forEach((shape)=>{
@@ -257,7 +268,37 @@ import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
   scene.add(group);
   const baseScaleY = group.scale.y;
 
-  const bg = new THREE.Mesh(new THREE.PlaneGeometry(6000,6000), new THREE.MeshBasicMaterial({color:0x000000}));
+  /* Out-of-focus backdrop: a few soft blobs painted onto a canvas, blurred, then
+     stretched across a large plane. Gives the logo something to sit against so
+     the depth reads, without the cost of a real depth-of-field pass. */
+  function blurredBackdrop(){
+    const c = document.createElement("canvas");
+    c.width = c.height = 512;
+    const x = c.getContext("2d");
+    x.fillStyle = "#000"; x.fillRect(0,0,512,512);
+    try{ x.filter = "blur(46px)"; }catch(e){}
+    [
+      {x:170, y:180, r:215, c:"rgba(84,86,98,.62)"},
+      {x:360, y:340, r:245, c:"rgba(46,52,66,.55)"},
+      {x:270, y:110, r:165, c:"rgba(120,120,132,.34)"},
+      {x:110, y:400, r:190, c:"rgba(58,60,72,.42)"},
+    ].forEach(b=>{
+      const g = x.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
+      g.addColorStop(0,b.c); g.addColorStop(1,"rgba(0,0,0,0)");
+      x.fillStyle = g;
+      x.beginPath(); x.arc(b.x,b.y,b.r,0,Math.PI*2); x.fill();
+    });
+    x.filter = "none";
+    const tex = new THREE.CanvasTexture(c);
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    return tex;
+  }
+
+  const bg = new THREE.Mesh(
+    new THREE.PlaneGeometry(3200, 2100),
+    new THREE.MeshBasicMaterial({ map: blurredBackdrop() })
+  );
   bg.position.z = -300; scene.add(bg);
 
   const revealMat = new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0});
@@ -277,10 +318,15 @@ import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
       p.position.y = finals[i].y + off.y*(1-ease);
       p.position.z = finals[i].z + off.z*(1-ease);
     });
+    /* slow parallax on the backdrop keeps it feeling like depth, not wallpaper */
+    bg.position.x = Math.sin(t*0.16) * 46;
+    bg.position.y = Math.cos(t*0.12) * 30;
+
     if(phase===0 && t>1.7) phase = 1;
     if(phase===0){
       group.rotation.y = Math.sin(t*0.8)*0.5;
       group.rotation.x = Math.cos(t*0.6)*0.12;
+      group.rotation.z = Math.sin(t*0.45)*0.045;
     }
     if(phase===1){
       group.rotation.y *= 0.9; group.rotation.x *= 0.9;
