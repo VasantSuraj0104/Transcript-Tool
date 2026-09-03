@@ -169,6 +169,22 @@ input.bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(255,92,92,
 }
 .saved{font-family:var(--mono);font-size:11px;color:var(--fg-4)}
 
+
+/* --- thumbnail reference ------------------------------------------- */
+.thumb-wrap{display:flex;gap:16px;align-items:flex-start}
+.thumb-wrap img{
+  width:200px;aspect-ratio:16/9;object-fit:cover;border-radius:var(--radius);
+  border:1px solid var(--border-hi);background:#111;flex:0 0 auto;display:block;
+}
+.thumb-info{flex:1;min-width:0;font-size:13px;color:var(--fg-3);line-height:1.6}
+.thumb-info a{color:var(--fg-2);text-decoration:underline;text-underline-offset:2px;
+  font-family:var(--mono);font-size:11.5px;word-break:break-all}
+.thumb-info .ta{display:inline-flex;gap:8px;margin-top:12px}
+.thumb-info .ta button{border:1px solid var(--border-hi);border-radius:6px;
+  padding:5px 11px;font-size:12px;color:var(--fg-2);transition:.13s}
+.thumb-info .ta button:hover{border-color:var(--border-focus);color:#fff}
+@media(max-width:560px){.thumb-wrap{flex-direction:column}.thumb-wrap img{width:100%}}
+
 #logo-loader{position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden;will-change:transform,opacity}
 #logo-loader canvas{display:block}
 </style>
@@ -286,6 +302,26 @@ input.bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(255,92,92,
         </div>
       </div>
 
+
+      <div class="panel hidden" id="thumbPanel">
+        <div class="panel-h">
+          <div><div class="pt">Video thumbnail</div><div class="ps">For reference only — the real cover image is added in Webflow.</div></div>
+        </div>
+        <div class="panel-b">
+          <div class="thumb-wrap">
+            <img id="thumbImg" alt="Video thumbnail"/>
+            <div class="thumb-info">
+              Webflow needs a main image before the page can go live. This is the video's
+              own thumbnail — use it as a reference for the cover art, or download it if
+              it works as-is.
+              <div class="ta">
+                <button id="thumbOpen">Open full size</button>
+                <button id="thumbCopy">Copy URL</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="panel">
         <div class="panel-h">
           <div><div class="pt">CMS fields</div><div class="ps">Everything else is added in Webflow after the draft is created.</div></div>
@@ -339,9 +375,9 @@ input.bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(255,92,92,
             <p id="pushSub"></p>
           </div>
         </div>
-        <div class="note" style="margin-top:20px">
-          <b>Still to do in Webflow.</b> Add the main image, cover image, both alt texts
-          and the author, then publish. The draft is in the <b>Conversations</b> collection.
+        <div class="note" style="margin-top:20px" id="pushNote">
+          <b>Still to do in Webflow.</b> Add the author and cover image, then publish.
+          The draft is in the <b>Conversations</b> collection.
         </div>
       </div>
     </div>
@@ -604,7 +640,7 @@ function renderResult(d){
 
   // a new transcript invalidates any recap on screen
   recap = null;
-  ["recapWrap","recapLoad","pushDone"].forEach(i=>$(i).classList.add("hidden"));
+  ["recapWrap","recapLoad","pushDone","thumbPanel"].forEach(i=>$(i).classList.add("hidden"));
   $("recapStart").classList.remove("hidden");
 
   const low = d.lowConfidence || [];
@@ -644,8 +680,8 @@ $("cancelBtn").onclick = ()=>{ if(controller) controller.abort(); stopTimer(); s
 $("retryBtn").onclick = ()=> show("formCard");
 $("againBtn").onclick = ()=>{
   $("url").value=""; $("speakers").value="";
-  recap = null; clearDraft();
-  ["recapWrap","recapLoad","pushDone"].forEach(i=>$(i).classList.add("hidden"));
+  recap = null; clearDraft(); $("thumbPanel").classList.add("hidden");
+  ["recapWrap","recapLoad","pushDone","thumbPanel"].forEach(i=>$(i).classList.add("hidden"));
   $("recapStart").classList.remove("hidden");
   show("formCard"); $("url").focus();
 };
@@ -671,6 +707,8 @@ function saveDraft(){
     guestDesignation: $("fDesignation").value,
     guestLinkedinLink: $("fLinkedin").value,
     videoLink: $("fVideo").value,
+    thumbnailUrl: recap.thumbnailUrl,
+    thumbnailFallback: recap.thumbnailFallback,
     headings: recap.headings, warnings: recap.warnings,
     sectionCount: recap.sectionCount, wordCount: recap.wordCount,
     readTimeMinutes: recap.readTimeMinutes,
@@ -705,6 +743,7 @@ function fillRecap(d){
   $("fDesignation").value  = d.guestDesignation || "";
   $("fLinkedin").value     = d.guestLinkedinLink || "";
   $("fVideo").value        = d.videoLink || d.videoUrl || "";
+  showThumb(d.thumbnailUrl, d.thumbnailFallback);
 
   paintRendered();
 
@@ -822,6 +861,7 @@ async function pushToWebflow(){
     $("pushDone").classList.remove("hidden");
     $("pushTitle").textContent = "Draft created in Webflow";
     $("pushSub").textContent = (d && d.slug) ? d.slug : title;
+    if(d && d.message) $("pushNote").innerHTML = "<b>Still to do in Webflow.</b> " + esc(d.message);
     clearDraft();
   }catch(err){
     alert("Couldn't push to Webflow: " + (err.message || "unknown error"));
@@ -831,6 +871,36 @@ async function pushToWebflow(){
 }
 
 /* --- wiring ----------------------------------------------------------- */
+/* ==================================================================
+   VIDEO THUMBNAIL
+   Shown so whoever makes the cover art has the video still to hand. It is
+   never sent to Webflow - the main image is added there by hand.
+   ================================================================== */
+function showThumb(url, fallback){
+  const p = $("thumbPanel");
+  if(!url){ p.classList.add("hidden"); return; }
+  const img = $("thumbImg");
+  // maxresdefault only exists when the uploader supplied a high-res thumbnail;
+  // hqdefault always does, so fall back to it rather than showing a broken image.
+  img.onerror = () => { if(fallback && img.src !== fallback) img.src = fallback; };
+  img.src = url;
+  p.dataset.url = url;
+  p.classList.remove("hidden");
+}
+
+$("thumbOpen").onclick = () => {
+  const u = $("thumbImg").src;
+  if(u) window.open(u, "_blank", "noopener");
+};
+$("thumbCopy").onclick = () => {
+  const u = $("thumbImg").src;
+  if(!u) return;
+  navigator.clipboard.writeText(u).then(()=>{
+    $("thumbCopy").textContent = "Copied";
+    setTimeout(()=>$("thumbCopy").textContent = "Copy URL", 1600);
+  });
+};
+
 $("recapBtn").onclick   = generateRecap;
 $("recapRegen").onclick = ()=>{
   if(confirm("Regenerate the page? Your edits will be lost.")) generateRecap();
