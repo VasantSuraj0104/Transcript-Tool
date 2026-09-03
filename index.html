@@ -81,11 +81,18 @@ input.bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(255,92,92,
 
 /* loading */
 .loading{display:flex;flex-direction:column;align-items:center;text-align:center;padding:56px 24px}
-.orbit{width:34px;height:34px;border:2px solid var(--border-hi);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading .lt{font-size:14.5px;font-weight:500;letter-spacing:-.01em}
-.loading .ls{font-size:13px;color:var(--fg-3);margin-top:6px}
-.loading .le{font-family:var(--mono);font-size:12px;color:var(--fg-4);margin-top:18px}
+.loading .lt{font-size:15px;font-weight:500;letter-spacing:-.012em}
+.bar{width:100%;max-width:400px;height:4px;background:var(--border);border-radius:99px;overflow:hidden;margin:20px 0 10px;position:relative}
+.bar i{display:block;height:100%;width:0%;border-radius:99px;background:#fff;
+  transition:width .55s cubic-bezier(.22,.8,.3,1)}
+/* faint sheen so the bar reads as active even between ticks */
+.bar::after{content:"";position:absolute;inset:0;border-radius:99px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);
+  transform:translateX(-100%);animation:sheen 1.9s ease-in-out infinite}
+@keyframes sheen{to{transform:translateX(100%)}}
+.lmeta{width:100%;max-width:400px;display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:11.5px;color:var(--fg-4)}
+.loading .ls{font-size:13px;color:var(--fg-3);margin-top:18px}
 
 /* result */
 .rhead{display:flex;align-items:flex-start;gap:14px;margin-bottom:24px}
@@ -115,6 +122,52 @@ input.bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(255,92,92,
 
 .err{border:1px solid var(--border-hi);border-left:2px solid var(--red);border-radius:var(--radius);padding:14px 16px;font-size:13px;color:var(--fg-2);line-height:1.6;background:rgba(255,92,92,.04)}
 .err b{color:var(--fg);font-weight:550}
+
+
+/* --- Webflow recap ------------------------------------------------- */
+.seg{display:inline-flex;border:1px solid var(--border-hi);border-radius:var(--radius);overflow:hidden}
+.seg button{padding:0 13px;height:30px;font-size:12.5px;color:var(--fg-3);transition:.13s}
+.seg button.on{background:rgba(255,255,255,.09);color:var(--fg)}
+.seg button + button{border-left:1px solid var(--border-hi)}
+
+/* rendered preview — mirrors how the page reads on factors.ai */
+.rendered{
+  background:#000;border:1px solid var(--border-hi);border-radius:var(--radius);
+  padding:22px 24px;max-height:560px;overflow-y:auto;font-size:14.5px;line-height:1.65;color:var(--fg-2);
+}
+.rendered h3{
+  font-size:17px;font-weight:600;color:var(--fg);letter-spacing:-.015em;
+  margin:26px 0 10px;line-height:1.3;
+}
+.rendered h3:first-child{margin-top:0}
+.rendered p{margin:0 0 12px}
+.rendered ul{margin:0 0 14px;padding-left:20px}
+.rendered li{margin-bottom:7px}
+.rendered strong{color:var(--fg);font-weight:600}
+.rendered a{color:var(--fg);text-decoration:underline;text-underline-offset:2px}
+
+.html-edit{
+  width:100%;height:460px;background:#000;border:1px solid var(--border-hi);border-radius:var(--radius);
+  padding:14px 16px;font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--fg-2);
+  resize:vertical;outline:none;
+}
+.html-edit:focus{border-color:var(--border-focus)}
+
+.bio-edit{
+  width:100%;height:110px;background:#000;border:1px solid var(--border-hi);border-radius:var(--radius);
+  padding:12px 14px;font-size:13.5px;line-height:1.6;color:var(--fg-2);resize:vertical;outline:none;
+}
+.bio-edit:focus{border-color:var(--border-focus)}
+
+.meta-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.meta-row{grid-template-columns:1fr}}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.chip{
+  font-family:var(--mono);font-size:11px;color:var(--fg-3);
+  border:1px solid var(--border-hi);border-radius:99px;padding:3px 10px;
+}
+.saved{font-family:var(--mono);font-size:11px;color:var(--fg-4)}
 
 #logo-loader{position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden;will-change:transform,opacity}
 #logo-loader canvas{display:block}
@@ -159,10 +212,10 @@ input.bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(255,92,92,
 
   <div class="card hidden" id="loadCard">
     <div class="loading">
-      <div class="orbit"></div>
-      <div class="lt" id="loadTitle">Generating transcript</div>
-      <div class="ls">This usually takes about a minute. Keep the tab open.</div>
-      <div class="le" id="elapsed">0:00</div>
+      <div class="lt" id="loadTitle">Fetching the transcript</div>
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="lmeta"><span id="pct">0%</span><span id="elapsed">0:00</span></div>
+      <div class="ls" id="loadSub">Usually two to four minutes. Keep the tab open.</div>
     </div>
     <div class="card-f"><button class="btn btn-ghost" id="cancelBtn">Cancel</button></div>
   </div>
@@ -197,6 +250,101 @@ input.bad{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(255,92,92,
     </div>
 
     <div class="note" id="rNote"></div>
+
+    <div class="panel" id="recapStart" style="margin-top:16px">
+      <div class="panel-h">
+        <div><div class="pt">Webflow page</div><div class="ps">Turn this transcript into a Conversations recap page.</div></div>
+        <button class="btn btn-primary" id="recapBtn">Generate page</button>
+      </div>
+    </div>
+
+    <div class="panel hidden" id="recapLoad" style="margin-top:16px">
+      <div class="loading" style="padding:40px 24px">
+        <div class="orbit"></div>
+        <div class="lt">Writing the recap page</div>
+        <div class="ls">Usually under a minute.</div>
+        <div class="le" id="recapElapsed">0:00</div>
+      </div>
+    </div>
+
+    <div class="hidden" id="recapWrap" style="margin-top:16px">
+      <div class="panel">
+        <div class="panel-h">
+          <div>
+            <div class="pt">Review before publishing</div>
+            <div class="ps" id="recapMeta"></div>
+          </div>
+          <div class="seg">
+            <button id="tabRendered" class="on">Preview</button>
+            <button id="tabHtml">HTML</button>
+          </div>
+        </div>
+        <div class="panel-b">
+          <div class="rendered" id="renderedBody"></div>
+          <textarea class="html-edit hidden" id="htmlBody" spellcheck="false"></textarea>
+          <div class="chips" id="recapChips"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h">
+          <div><div class="pt">CMS fields</div><div class="ps">Everything else is added in Webflow after the draft is created.</div></div>
+          <span class="saved" id="savedNote"></span>
+        </div>
+        <div class="panel-b">
+          <div class="field">
+            <label for="fTitle">Page title</label>
+            <input type="text" id="fTitle" autocomplete="off"/>
+          </div>
+          <div class="field">
+            <label for="fBio">Guest description</label>
+            <textarea class="bio-edit" id="fBio" spellcheck="false"></textarea>
+          </div>
+          <div class="meta-row">
+            <div class="field">
+              <label for="fGuest">Guest name</label>
+              <input type="text" id="fGuest" autocomplete="off"/>
+            </div>
+            <div class="field">
+              <label for="fDesignation">Guest designation</label>
+              <input type="text" id="fDesignation" placeholder="Founder & CEO, Beyond the Funnel" autocomplete="off"/>
+            </div>
+          </div>
+          <div class="meta-row">
+            <div class="field">
+              <label for="fLinkedin">Guest LinkedIn</label>
+              <input type="url" id="fLinkedin" placeholder="https://www.linkedin.com/in/..." autocomplete="off"/>
+            </div>
+            <div class="field">
+              <label for="fVideo">Video link</label>
+              <input type="url" id="fVideo" autocomplete="off"/>
+            </div>
+          </div>
+        </div>
+        <div class="card-f">
+          <button class="btn btn-ghost" id="recapRegen">Regenerate</button>
+          <button class="btn btn-primary" id="pushBtn">Approve &amp; push to Webflow</button>
+        </div>
+      </div>
+
+      <div class="note" id="recapWarn"></div>
+    </div>
+
+    <div class="panel hidden" id="pushDone" style="margin-top:16px">
+      <div class="panel-b">
+        <div class="rhead" style="margin-bottom:0">
+          <div class="check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div>
+            <h2 id="pushTitle">Draft created in Webflow</h2>
+            <p id="pushSub"></p>
+          </div>
+        </div>
+        <div class="note" style="margin-top:20px">
+          <b>Still to do in Webflow.</b> Add the main image, cover image, both alt texts
+          and the author, then publish. The draft is in the <b>Conversations</b> collection.
+        </div>
+      </div>
+    </div>
 
     <div style="margin-top:24px"><button class="btn btn-ghost" id="againBtn">Generate another</button></div>
   </div>
@@ -331,8 +479,11 @@ addEventListener("error",(e)=>{
 /* Point this at the n8n webhook. The workflow must be ACTIVE for the
    production URL to answer. For testing, paste the Webhook node's test URL
    here and press "Listen for test event" first. */
-const WEBHOOK_URL = "https://n8n-api.factors.app/webhook/youtube-transcript";
-const TIMEOUT_MS  = 5 * 60 * 1000;
+const WEBHOOK_URL  = "https://n8n-api.factors.app/webhook/youtube-transcript";
+const RECAP_URL    = "https://n8n-api.factors.app/webhook/webflow-recap";
+const PUBLISH_URL  = "https://n8n-api.factors.app/webhook/webflow-publish";
+const DRAFT_KEY    = "factors_recap_draft_v1";
+const TIMEOUT_MS  = 15 * 60 * 1000;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -345,15 +496,54 @@ function show(id){
   $(id).classList.remove("hidden");
 }
 
+/* The request is a single blocking call, so there is no real progress signal to
+   read. This is a time-based estimate on a decay curve: quick at first, slower
+   later, and capped at 93% so it never claims to be finished before the response
+   actually lands. */
+const STAGES = [
+  { at:0,   label:"Fetching the transcript" },
+  { at:25,  label:"Working out who's speaking" },
+  { at:80,  label:"Cleaning it up" },
+  { at:200, label:"Almost there" },
+];
+
+function setProgress(p){
+  const v = Math.max(0, Math.min(100, p));
+  $("barFill").style.width = v + "%";
+  $("pct").textContent = Math.round(v) + "%";
+}
+
 function startTimer(){
   startedAt = Date.now();
   $("elapsed").textContent = "0:00";
+  $("loadTitle").textContent = STAGES[0].label;
+  $("loadSub").textContent = "Usually two to four minutes. Keep the tab open.";
+  setProgress(0);
+
   timer = setInterval(()=>{
-    const s = Math.floor((Date.now()-startedAt)/1000);
-    $("elapsed").textContent = Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
-  }, 1000);
+    const s = (Date.now()-startedAt)/1000;
+    const whole = Math.floor(s);
+    $("elapsed").textContent = Math.floor(whole/60)+":"+String(whole%60).padStart(2,"0");
+
+    // asymptotic: ~57% at 1 min, ~86% at 2 min, never past 93%
+    setProgress(93 * (1 - Math.exp(-s / 70)));
+
+    let stage = STAGES[0];
+    for(const st of STAGES) if(whole >= st.at) stage = st;
+    if($("loadTitle").textContent !== stage.label) $("loadTitle").textContent = stage.label;
+
+    if(whole === 300) $("loadSub").textContent = "This is a long one. Still running.";
+  }, 250);
 }
+
 function stopTimer(){ clearInterval(timer); timer=null; }
+
+/* fill the bar before swapping panels, so it completes rather than just vanishing */
+function finishProgress(){
+  setProgress(100);
+  $("loadTitle").textContent = "Done";
+  return new Promise(r=>setTimeout(r, 420));
+}
 
 async function run(){
   const el = $("url"), url = (el.value||"").trim();
@@ -380,12 +570,13 @@ async function run(){
     if(!data || !data.transcriptText) throw new Error("Finished, but no transcript came back.");
 
     stopTimer();
+    await finishProgress();
     renderResult(data);
   }catch(err){
     stopTimer();
     const aborted = err && err.name === "AbortError";
     showError(aborted
-      ? "Timed out after 5 minutes. Long videos can take longer than that."
+      ? "TIMEOUT"
       : (err && err.message) || "Couldn't reach the server.");
   }finally{
     clearTimeout(killer);
@@ -407,6 +598,11 @@ function renderResult(d){
   $("preview").value = d.transcriptText;
   $("openBtn").href = d.documentUrl || "#";
 
+  // a new transcript invalidates any recap on screen
+  recap = null;
+  ["recapWrap","recapLoad","pushDone"].forEach(i=>$(i).classList.add("hidden"));
+  $("recapStart").classList.remove("hidden");
+
   const low = d.lowConfidence || [];
   $("rNote").innerHTML = `<b>Speaker names are worked out from the words, not the voices.</b>
     They're usually right, but check the first exchange and one handover before you publish.
@@ -415,6 +611,13 @@ function renderResult(d){
 
 function showError(msg){
   show("errCard");
+  if(msg === "TIMEOUT"){
+    // the run keeps going server-side, so the doc usually still lands
+    $("errBody").innerHTML = `<b>This page stopped waiting after 15 minutes.</b><br/><br/>
+      The transcript is probably still being written. Check your Google Drive in a
+      few minutes — the document is created even when this page gives up.`;
+    return;
+  }
   $("errBody").innerHTML = `<b>${esc(msg)}</b><br/><br/>
     The video may be private or have no captions. Nothing was saved.`;
 }
@@ -435,8 +638,229 @@ $("url").addEventListener("input", ()=>$("url").classList.remove("bad"));
 ["url","speakers"].forEach(id=>$(id).addEventListener("keydown", e=>{ if(e.key==="Enter") run(); }));
 $("cancelBtn").onclick = ()=>{ if(controller) controller.abort(); stopTimer(); show("formCard"); };
 $("retryBtn").onclick = ()=> show("formCard");
-$("againBtn").onclick = ()=>{ $("url").value=""; $("speakers").value=""; show("formCard"); $("url").focus(); };
+$("againBtn").onclick = ()=>{
+  $("url").value=""; $("speakers").value="";
+  recap = null; clearDraft();
+  ["recapWrap","recapLoad","pushDone"].forEach(i=>$(i).classList.add("hidden"));
+  $("recapStart").classList.remove("hidden");
+  show("formCard"); $("url").focus();
+};
 $("dlTxt").onclick = download;
+
+
+/* ==================================================================
+   WEBFLOW RECAP
+   Stage 2 writes the page and hands it back for review. Stage 3 pushes
+   exactly what the reviewer approved - nothing is regenerated on push.
+   ================================================================== */
+let recap = null, recapTimer = null, recapCtrl = null;
+
+/* --- draft persistence: a reviewer who refreshes should not lose edits --- */
+function saveDraft(){
+  if(!recap) return;
+  const draft = {
+    videoUrl: recap.videoUrl,
+    bodyHtml: $("htmlBody").value,
+    title: $("fTitle").value,
+    guestDescription: $("fBio").value,
+    guestName: $("fGuest").value,
+    guestDesignation: $("fDesignation").value,
+    guestLinkedinLink: $("fLinkedin").value,
+    videoLink: $("fVideo").value,
+    headings: recap.headings, warnings: recap.warnings,
+    sectionCount: recap.sectionCount, wordCount: recap.wordCount,
+    readTimeMinutes: recap.readTimeMinutes,
+    savedAt: Date.now(),
+  };
+  try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); }catch(e){}
+  const t = new Date();
+  $("savedNote").textContent = "saved " + t.getHours() + ":" + String(t.getMinutes()).padStart(2,"0");
+}
+function loadDraft(){
+  try{ return JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); }catch(e){ return null; }
+}
+function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }
+
+/* --- render ---------------------------------------------------------- */
+function paintRendered(){
+  // The body is model-generated HTML, so strip anything executable before it
+  // ever touches innerHTML.
+  const safe = String($("htmlBody").value || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/ on\w+="[^"]*"/gi, "");
+  $("renderedBody").innerHTML = safe;
+}
+
+function fillRecap(d){
+  recap = d;
+  $("htmlBody").value      = d.bodyHtml || "";
+  $("fTitle").value        = d.title || "";
+  $("fBio").value          = d.guestDescription || "";
+  $("fGuest").value        = d.guestName || "";
+  $("fDesignation").value  = d.guestDesignation || "";
+  $("fLinkedin").value     = d.guestLinkedinLink || "";
+  $("fVideo").value        = d.videoLink || d.videoUrl || "";
+
+  paintRendered();
+
+  const bits = [];
+  if(d.sectionCount) bits.push(d.sectionCount + " sections");
+  if(d.wordCount) bits.push(d.wordCount + " words");
+  if(d.readTimeMinutes) bits.push("~" + d.readTimeMinutes + " min read");
+  $("recapMeta").textContent = bits.join("  ·  ");
+
+  $("recapChips").innerHTML = (d.headings || [])
+    .map(h => `<span class="chip">${esc(h)}</span>`).join("");
+
+  const w = d.warnings || [];
+  $("recapWarn").innerHTML = w.length
+    ? `<b>Worth checking.</b><br/>${w.map(esc).join("<br/>")}`
+    : `<b>Read it before you push.</b> Every figure and quote should trace back to
+       something actually said in the webinar. Edit anything that looks off — what you
+       approve here is exactly what lands in Webflow.`;
+
+  $("recapStart").classList.add("hidden");
+  $("recapLoad").classList.add("hidden");
+  $("pushDone").classList.add("hidden");
+  $("recapWrap").classList.remove("hidden");
+}
+
+/* --- stage 2 ---------------------------------------------------------- */
+async function generateRecap(){
+  if(!current || !current.transcriptText) return;
+
+  $("recapStart").classList.add("hidden");
+  $("recapWrap").classList.add("hidden");
+  $("recapLoad").classList.remove("hidden");
+
+  const started = Date.now();
+  $("recapElapsed").textContent = "0:00";
+  recapTimer = setInterval(()=>{
+    const s = Math.floor((Date.now()-started)/1000);
+    $("recapElapsed").textContent = Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+  }, 1000);
+
+  recapCtrl = new AbortController();
+  const killer = setTimeout(()=>recapCtrl.abort(), TIMEOUT_MS);
+
+  try{
+    const r = await fetch(RECAP_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        transcriptText: current.transcriptText,
+        title: current.title || "",
+        guestName: (current.speakers || [])[1] || "",
+        videoUrl: $("url").value.trim() || current.sourceUrl || "",
+      }),
+      signal: recapCtrl.signal,
+    });
+    const raw = await r.text();
+    let d = null; try{ d = JSON.parse(raw); }catch(e){}
+
+    if(!r.ok) throw new Error((d && (d.message || d.error)) || `Server responded ${r.status}.`);
+    if(!d || !d.bodyHtml) throw new Error("Finished, but no page content came back.");
+
+    d.videoUrl = $("url").value.trim() || current.sourceUrl || "";
+    clearInterval(recapTimer);
+    fillRecap(d);
+    saveDraft();
+  }catch(err){
+    clearInterval(recapTimer);
+    $("recapLoad").classList.add("hidden");
+    $("recapStart").classList.remove("hidden");
+    const aborted = err && err.name === "AbortError";
+    alert(aborted ? "Timed out generating the page." : (err.message || "Couldn't reach the server."));
+  }finally{
+    clearTimeout(killer);
+    recapCtrl = null;
+  }
+}
+
+/* --- stage 3 ---------------------------------------------------------- */
+async function pushToWebflow(){
+  const title = $("fTitle").value.trim();
+  const body  = $("htmlBody").value.trim();
+  if(!title){ $("fTitle").classList.add("bad"); $("fTitle").focus(); return; }
+  if(!body){ alert("The page body is empty."); return; }
+
+  const btn = $("pushBtn"), label = btn.textContent;
+  btn.disabled = true; btn.textContent = "Pushing…";
+
+  try{
+    const r = await fetch(PUBLISH_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        title,
+        bodyHtml: body,
+        guestName: $("fGuest").value.trim(),
+        guestDescription: $("fBio").value.trim(),
+        guestDesignation: $("fDesignation").value.trim(),
+        guestLinkedinLink: $("fLinkedin").value.trim(),
+        videoUrl: $("fVideo").value.trim(),
+      }),
+    });
+    const raw = await r.text();
+    let d = null; try{ d = JSON.parse(raw); }catch(e){}
+    if(!r.ok) throw new Error((d && (d.message || d.error)) || `Server responded ${r.status}.`);
+
+    $("recapWrap").classList.add("hidden");
+    $("pushDone").classList.remove("hidden");
+    $("pushTitle").textContent = "Draft created in Webflow";
+    $("pushSub").textContent = (d && d.slug) ? d.slug : title;
+    clearDraft();
+  }catch(err){
+    alert("Couldn't push to Webflow: " + (err.message || "unknown error"));
+  }finally{
+    btn.disabled = false; btn.textContent = label;
+  }
+}
+
+/* --- wiring ----------------------------------------------------------- */
+$("recapBtn").onclick   = generateRecap;
+$("recapRegen").onclick = ()=>{
+  if(confirm("Regenerate the page? Your edits will be lost.")) generateRecap();
+};
+$("pushBtn").onclick = pushToWebflow;
+
+$("tabRendered").onclick = ()=>{
+  paintRendered();
+  $("renderedBody").classList.remove("hidden");
+  $("htmlBody").classList.add("hidden");
+  $("tabRendered").classList.add("on"); $("tabHtml").classList.remove("on");
+};
+$("tabHtml").onclick = ()=>{
+  $("renderedBody").classList.add("hidden");
+  $("htmlBody").classList.remove("hidden");
+  $("tabHtml").classList.add("on"); $("tabRendered").classList.remove("on");
+};
+
+["htmlBody","fTitle","fBio","fGuest","fDesignation","fLinkedin","fVideo"].forEach(id=>{
+  $(id).addEventListener("input", ()=>{
+    if(id === "htmlBody") paintRendered();
+    $(id).classList.remove("bad");
+    clearTimeout(window.__saveT);
+    window.__saveT = setTimeout(saveDraft, 600);
+  });
+});
+
+/* --- restore an unfinished review on load ------------------------------ */
+(function restoreDraft(){
+  const d = loadDraft();
+  if(!d || !d.bodyHtml) return;
+  const age = Math.round((Date.now() - (d.savedAt||0)) / 60000);
+  const when = age < 60 ? age + " minutes ago" : Math.round(age/60) + " hours ago";
+  if(!confirm("You have an unfinished Webflow page from " + when + ". Restore it?")){
+    clearDraft(); return;
+  }
+  current = current || { transcriptText: "", title: d.title };
+  show("resultWrap");
+  $("recapStart").classList.add("hidden");
+  fillRecap(d);
+})();
+
 $("copyBtn").onclick = ()=>{
   if(!current) return;
   navigator.clipboard.writeText(current.transcriptText).then(()=>{
